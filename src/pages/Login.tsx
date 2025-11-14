@@ -1,13 +1,99 @@
+import * as React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
 
-function Login() {
+const labelStyles = "body-medium text-[#075985]";
+const inputStyles = "bg-[#F3F3F5] subtle";
+const forgotLinkStyles =
+  "h-auto p-0 text-[#F59E0B] hover:text-amber-600 detail";
+const submitButtonStyles =
+  "w-full bg-[#0284C7] text-white body-semibold hover:bg-sky-700";
+const footerTextStyles = "text-[#4A5565] subtle";
+const footerLinkStyles =
+  "h-auto p-0 text-[#F59E0B] hover:text-amber-600 subtle-semibold";
+
+export default function LoginPage() {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Form Login Disubmit");
+  };
+
   return (
-    <div className="">
-      <Typography variant="h2" className="font-bold text-3xl">
-        Login Page
-      </Typography>
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-[#B8D4FF] to-[#FFEEB2] p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="items-center pt-8">
+          <Avatar className="mx-auto size-16">
+            <AvatarImage src="/logo.png" alt="Logo Perusahaan" />
+            <AvatarFallback className="text-3xl">🐱</AvatarFallback>
+          </Avatar>
+
+          <Typography variant="h4" className="text-center !font-bold mt-2">
+            Welcome Back!
+          </Typography>
+
+          <Typography variant="p" className="text-center text-[#64748B] mt-1">
+            Sign in to continue creating amazing
+            <br />
+            educational games
+          </Typography>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="email" className={labelStyles}>
+                Email
+              </Label>
+              <Input
+                type="email"
+                id="email"
+                placeholder="you@example.com"
+                className={inputStyles}
+              />
+            </div>
+
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="password" className={labelStyles}>
+                Password
+              </Label>
+              <Input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                className={inputStyles}
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="link" type="button" className={forgotLinkStyles}>
+                Forgot password?
+              </Button>
+            </div>
+
+            <Button type="submit" className={submitButtonStyles}>
+              Login
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex-col justify-center pb-8">
+          <Typography variant="p" className="text-center">
+            <span className={footerTextStyles}>Don't have an account? </span>
+            <Button variant="link" className={footerLinkStyles} asChild>
+              <a href="/register">Sign Up</a>
+            </Button>
+          </Typography>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
-
-export default Login;
