@@ -218,7 +218,7 @@ export default function FlipTiles() {
         prev.map((t) => (t.id === tileId ? { ...t, justUnflipped: false } : t)),
       );
     }, 400);
-    setZoomedTile(null);
+    // REMOVED: setZoomedTile(null); -> Keep modal open!
   };
 
   const removeTile = (tileId: string) => {
@@ -232,7 +232,7 @@ export default function FlipTiles() {
         ),
       );
     }, 380);
-    setZoomedTile(null);
+    setZoomedTile(null); // Remove closes standardly
   };
 
   const restoreAll = () => {
@@ -380,63 +380,114 @@ export default function FlipTiles() {
     );
   }
 
-  // --- PHASE 1: INTRO SCREEN ---
+  // --- PHASE 1: INTRO SCREEN (NEW 3D TEXTURE DESIGN) ---
   if (showIntro) {
-    return (
-      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center overflow-hidden">
-        {/* Animated Background Mesh */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:20px_20px]"></div>
+    // Inject Custom 3D Keyframes
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+      @keyframes spin-3d-enter {
+        0% { transform: scale(0) rotateY(-90deg); opacity: 0; }
+        100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+      }
+      .letter-3d {
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .letter-3d:hover {
+        transform: scale(1.1) rotateY(180deg) !important;
+      }
+      .backface-hidden {
+        backface-visibility: hidden !important;
+        -webkit-backface-visibility: hidden !important;
+      }
+    `;
+    if (!document.getElementById("intro-styles")) {
+      styleSheet.id = "intro-styles";
+      document.head.appendChild(styleSheet);
+    }
 
-        <div className="flex gap-2 mb-6 md:mb-8 relative z-10 perspective-[1000px]">
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center overflow-hidden perspective-[1200px]">
+        {/* Animated Background Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)]"></div>
+
+        {/* Moving Gradient blobs for atmosphere */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+        {/* FLIP Text */}
+        <div
+          className="flex gap-4 mb-8 relative z-10"
+          style={{ perspective: "1000px" }}
+        >
           {["F", "L", "I", "P"].map((char, i) => (
             <div
               key={i}
-              className="w-16 h-20 md:w-24 md:h-32 bg-gradient-to-br from-sky-400 to-sky-600 rounded-xl shadow-[0_8px_0_theme(colors.sky.700),0_15px_20px_rgba(0,0,0,0.4)] text-white text-4xl md:text-6xl font-black flex items-center justify-center animate-in zoom-in slide-in-from-bottom-20 duration-700 border-t border-white/30"
+              className="letter-3d w-20 h-24 md:w-32 md:h-40 relative group cursor-default"
               style={{
-                animationDelay: `${i * 150}ms`,
-                animationFillMode: "both",
-                transformStyle: "preserve-3d",
+                animation: `spin-3d-enter 1s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.15}s backwards`,
               }}
             >
-              <div className="animate-bounce delay-700 drop-shadow-md">
-                {char}
+              {/* Front Face */}
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center text-6xl md:text-8xl font-black text-white shadow-[0_0_25px_rgba(6,182,212,0.6),inset_0_2px_4px_rgba(255,255,255,0.5)] border-t border-white/40 backface-hidden z-20">
+                {/* Texture Overlay */}
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 bg-repeat rounded-2xl mix-blend-overlay"></div>
+                <span className="drop-shadow-2xl filter">{char}</span>
+              </div>
+
+              {/* Back Face Content (When flipped by hover) */}
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-700 rounded-2xl flex items-center justify-center text-6xl md:text-8xl font-black text-white backface-hidden z-20"
+                style={{ transform: "rotateY(180deg)" }}
+              >
+                ?
               </div>
             </div>
           ))}
         </div>
-        <div className="flex gap-2 relative z-10 perspective-[1000px]">
+
+        {/* TILES Text */}
+        <div
+          className="flex gap-3 relative z-10"
+          style={{ perspective: "1000px" }}
+        >
           {["T", "I", "L", "E", "S"].map((char, i) => (
             <div
               key={i}
-              className={`w-14 h-18 md:w-20 md:h-28 rounded-xl shadow-[0_6px_0_rgba(0,0,0,0.2),0_10px_15px_rgba(0,0,0,0.3)] text-white text-3xl md:text-5xl font-black flex items-center justify-center animate-in zoom-in slide-in-from-bottom-20 duration-700 border-t border-white/20 ${
-                [
-                  "bg-gradient-to-br from-red-400 to-red-600",
-                  "bg-gradient-to-br from-yellow-400 to-yellow-600",
-                  "bg-gradient-to-br from-green-400 to-green-600",
-                  "bg-gradient-to-br from-purple-400 to-purple-600",
-                  "bg-gradient-to-br from-pink-400 to-pink-600",
-                ][i]
-              }`}
+              className="letter-3d w-16 h-20 md:w-24 md:h-32 relative"
               style={{
-                animationDelay: `${600 + i * 150}ms`,
-                animationFillMode: "both",
+                animation: `spin-3d-enter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.6 + i * 0.15}s backwards`,
               }}
             >
-              <div className="animate-pulse drop-shadow-sm">{char}</div>
+              {/* Custom colors for each letter */}
+              <div
+                className={`absolute inset-0 rounded-xl flex items-center justify-center text-4xl md:text-6xl font-black text-white shadow-[0_0_15px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.4)] border-t border-white/30 backface-hidden z-20 ${
+                  [
+                    "bg-gradient-to-br from-red-500 to-rose-700",
+                    "bg-gradient-to-br from-amber-400 to-orange-600",
+                    "bg-gradient-to-br from-emerald-400 to-green-700",
+                    "bg-gradient-to-br from-violet-500 to-purple-700",
+                    "bg-gradient-to-br from-fuchsia-400 to-pink-700",
+                  ][i]
+                }`}
+              >
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-20 rounded-xl mix-blend-overlay"></div>
+                <span className="drop-shadow-md">{char}</span>
+              </div>
             </div>
           ))}
         </div>
-        <Typography
-          variant="h3"
-          className="text-white mt-12 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-[1800ms] fill-mode-both drop-shadow-lg tracking-widest font-bold"
-        >
-          GET READY!
-        </Typography>
+
+        <div className="mt-16 relative z-10 animate-pulse">
+          <div className="px-8 py-3 bg-white/5 backdrop-blur-md rounded-full border border-white/20 text-white font-bold tracking-[0.3em] shadow-[0_0_30px_rgba(255,255,255,0.1)] text-lg animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-[1.5s] fill-mode-both">
+            GET READY...
+          </div>
+        </div>
       </div>
     );
   }
 
-  // --- PHASE 2: GAMEPLAY (Rendered after intro) ---
+  // --- PHASE 2: GAMEPLAY (Rendered after intro) RESTORED TO LIGHT THEME ---
   return (
     <div className="min-h-screen bg-slate-50 animate-in fade-in duration-700 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
       <div className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-10 px-6 py-4 shadow-sm">
@@ -487,7 +538,7 @@ export default function FlipTiles() {
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Start again
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {}}>Resume</DropdownMenuItem>
+              <DropdownMenuItem>Resume</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -550,7 +601,11 @@ export default function FlipTiles() {
                   ref={(r) => {
                     cardRefs.current[tile.id] = r;
                   }}
-                  className={`relative cursor-pointer transition-transform duration-300 ${spinnerTarget === tile.id ? "scale-105 z-20" : "hover:-translate-y-1 hover:z-10"}`}
+                  className={`group relative cursor-pointer px-0.5 py-0.5 ${
+                    spinnerTarget === tile.id
+                      ? "z-20 scale-105"
+                      : "hover:z-20 hover:scale-[1.03] hover:-translate-y-1"
+                  } transition-all duration-300 ease-out`}
                   style={{
                     height: tileHeight,
                     perspective: "1000px",
@@ -565,9 +620,10 @@ export default function FlipTiles() {
                   }}
                 >
                   <div
-                    className="w-full h-full relative transition-all duration-500 rounded-xl"
+                    className="w-full h-full relative transition-all duration-700 rounded-xl"
                     style={{
                       transformStyle: "preserve-3d",
+                      // Fix flip logic: if flipped (true) -> show back (180deg), if !flipped (false) -> show front (0deg)
                       transform: tile.flipped
                         ? "rotateY(180deg)"
                         : "rotateY(0deg)",
@@ -575,12 +631,13 @@ export default function FlipTiles() {
                   >
                     {/* Front Face (Label / Color) - Visible at 0deg */}
                     <div
-                      className={`absolute inset-0 w-full h-full backface-hidden rounded-xl flex items-center justify-center font-bold text-white shadow-[0_6px_0_rgba(0,0,0,0.15),0_10px_10px_rgba(0,0,0,0.1)] border-t border-white/30 ${tile.color} bg-gradient-to-br from-white/10 to-black/5`}
+                      className={`absolute inset-0 w-full h-full rounded-xl flex items-center justify-center font-bold text-white shadow-md border-t border-white/30 ${tile.color} bg-gradient-to-br from-white/10 to-black/5 p-4 text-center leading-snug break-words`}
                       style={{
-                        backfaceVisibility: "hidden",
+                        backfaceVisibility: "hidden", // Crucial: hide when flipped
+                        WebkitBackfaceVisibility: "hidden",
                         fontSize: `clamp(0.8rem, ${tileHeight / 90}rem, 1.25rem)`,
-                        WebkitBackfaceVisibility: "hidden", // Safari support
                         textShadow: "0 2px 2px rgba(0,0,0,0.2)",
+                        transform: "rotateY(0deg)", // Enforce front orientation
                       }}
                     >
                       {tile.label}
@@ -588,23 +645,22 @@ export default function FlipTiles() {
 
                     {/* Back Face (Question Mark) - Visible at 180deg */}
                     <div
-                      className="absolute inset-0 w-full h-full bg-slate-800 backface-hidden rounded-xl flex items-center justify-center font-black text-white shadow-[0_6px_0_rgba(0,0,0,0.3),0_10px_10px_rgba(0,0,0,0.2)] border-t border-white/10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-700 to-slate-900"
+                      className="absolute inset-0 w-full h-full bg-slate-800 rounded-xl flex items-center justify-center font-black text-white shadow-md border-t border-white/10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-700 to-slate-900"
                       style={{
-                        backfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)",
-                        WebkitBackfaceVisibility: "hidden", // Safari support
+                        backfaceVisibility: "hidden", // Crucial: hide when facing away
+                        WebkitBackfaceVisibility: "hidden",
                         fontSize: `clamp(1.5rem, ${tileHeight / 50}rem, 3rem)`,
+                        transform: "rotateY(180deg)", // Pre-rotated to match flipped state
                       }}
                     >
                       <span className="drop-shadow-lg opacity-80">?</span>
-                      {/* Subtle Pattern Overlay */}
                       <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                     </div>
                   </div>
 
-                  {/* Spinner Ring Effect */}
+                  {/* Spinner Ring Effect (Thinner) */}
                   {spinnerTarget === tile.id && (
-                    <div className="absolute -inset-2 border-4 border-sky-400 rounded-2xl animate-pulse pointer-events-none"></div>
+                    <div className="absolute -inset-1 border-[3px] border-sky-400 rounded-2xl animate-pulse pointer-events-none"></div>
                   )}
                 </div>
               );
@@ -637,7 +693,7 @@ export default function FlipTiles() {
           }}
         >
           <div
-            className={`${zoomLeaving ? "zoom-overlay-exit" : "zoom-overlay-enter"} relative rounded-2xl shadow-2xl flex flex-col bg-white border border-slate-200`}
+            className={`${zoomLeaving ? "zoom-overlay-exit" : "zoom-overlay-enter"} relative rounded-2xl shadow-2xl flex flex-col bg-transparent`} // Made bg transparent for 3D card wrapper
             style={{
               width: "min(90vw, 420px)",
               ...({
@@ -651,30 +707,80 @@ export default function FlipTiles() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 space-y-6">
-              {/* Zoomed Tile Graphic */}
-              <div
-                className={`w-full aspect-square rounded-xl flex items-center justify-center text-6xl font-black shadow-inner border-4 border-slate-100 ${zoomedTileData.flipped ? "bg-slate-800 text-white" : "bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800"}`}
-              >
-                {zoomedTileData.flipped ? "?" : zoomedTileData.label}
+            {/* 3D WRAPPER FOR ZOOMED CARD */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-6 space-y-6">
+              <div className="w-full aspect-square relative perspective-[1000px]">
+                <div
+                  className="w-full h-full relative transition-all duration-700 rounded-xl"
+                  style={{
+                    transformStyle: "preserve-3d",
+                    // Animate FLIP in sync with state
+                    transform: zoomedTileData.flipped
+                      ? "rotateY(180deg)"
+                      : "rotateY(0deg)",
+                  }}
+                >
+                  {/* Front Face (Zoom) */}
+                  <div
+                    className={`absolute inset-0 w-full h-full backface-hidden rounded-xl flex items-center justify-center font-bold text-white shadow-inner border-4 border-slate-100 ${zoomedTileData.color} bg-gradient-to-br from-white/10 to-black/5`}
+                    style={{
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transform: "rotateY(0deg)",
+                    }}
+                  >
+                    <div className="p-8 text-center leading-tight break-words w-full max-h-full overflow-y-auto flex items-center justify-center text-4xl md:text-5xl">
+                      {zoomedTileData.label}
+                    </div>
+                  </div>
+
+                  {/* Back Face (Zoom) */}
+                  <div
+                    className="absolute inset-0 w-full h-full bg-slate-800 backface-hidden rounded-xl flex items-center justify-center font-black text-white shadow-inner border-4 border-slate-700/50"
+                    style={{
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                    }}
+                  >
+                    <span className="text-6xl md:text-8xl drop-shadow-lg opacity-80">
+                      ?
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-4">
                 <Button
                   className="flex-1 h-12 text-lg font-bold shadow-sm"
                   variant="outline"
-                  onClick={() => flipTile(zoomedTileData.id)}
+                  onClick={() => flipTile(zoomedTileData.id)} // This now only flips state, doesn't close modal
                 >
                   {zoomedTileData.flipped ? "Reveal" : "Hide"}
                 </Button>
                 <Button
                   className="flex-1 h-12 text-lg font-bold shadow-md bg-red-500 hover:bg-red-600 text-white border-none"
-                  onClick={() => removeTile(zoomedTileData.id)}
+                  onClick={() => removeTile(zoomedTileData.id)} // This still closes modal
                 >
                   Remove
                 </Button>
               </div>
             </div>
+
+            <Button
+              variant="ghost"
+              className="absolute -top-12 right-0 text-white hover:bg-white/10"
+              onClick={() => {
+                setZoomLeaving(true);
+                setTimeout(() => {
+                  setZoomedTile(null);
+                  setZoomFromRect(null);
+                  setZoomLeaving(false);
+                }, 300);
+              }}
+            >
+              Close
+            </Button>
           </div>
         </div>
       )}
