@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
-import audioHome from "./../assets/Home_Audio_assets.mp3";
+import audioHome from "./../assets/Home_audio_assets.mp3";
 import backgroundHome from "./../assets/Home_Background_assets.png";
 import logoHome from "./../assets/Home_Logo_assets.png";
 import characterHome from "./../assets/Home_Character_assets.png";
@@ -58,9 +58,10 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, hideButton }) => {
     window.addEventListener("click", handleUserInteraction);
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
       }
       window.removeEventListener("click", handleUserInteraction);
     };

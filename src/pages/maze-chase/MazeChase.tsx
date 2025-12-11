@@ -1,31 +1,23 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StartScreen from "./components/StartScreen";
-import Maps from "./components/Maps";
 import PauseDialog from "./components/PauseDialog";
 import { useGetMazeChaseGame } from "@/api/maze-chase/useGetMazeChaseGame";
-import heart from "./assets/heart.png";
-import forrest from "./assets/maze/bg_maze.jpg";
 import startBg from "./assets/Home_Background_assets.png";
-
-type MoveDir = "up" | "down" | "left" | "right" | null;
 
 const Game = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: gameData } = useGetMazeChaseGame(id || "");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [stage, setStage] = useState<"start" | "zoom" | "maze" | "gameover">(
     "start",
   );
   const [hideButton, setHideButton] = useState(false);
-  const [moveDir, setMoveDir] = useState<MoveDir>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
-  const [currentQuestionIndex] = useState(0);
-  const [health, setHealth] = useState(3);
-  const [isInvincible, setIsInvincible] = useState(false);
 
   // Initialize countdown from API
   useEffect(() => {
@@ -72,10 +64,6 @@ const Game = () => {
     }, 1400);
   };
 
-  const handleDirectionClick = (dir: Exclude<MoveDir, null>) => {
-    setMoveDir(dir);
-  };
-
   const handlePauseClick = () => {
     setIsPaused(true);
     setShowPauseDialog(true);
@@ -84,6 +72,8 @@ const Game = () => {
   const handleResume = () => {
     setShowPauseDialog(false);
     setIsPaused(false);
+    // Focus back to iframe so game can receive input
+    iframeRef.current?.focus();
   };
 
   const handleRestart = () => {
@@ -91,38 +81,28 @@ const Game = () => {
     setIsPaused(false);
     setStage("start");
     setHideButton(false);
-    setMoveDir(null);
     setCountdown(gameData?.countdown || null);
-    setHealth(3);
-    setIsInvincible(false);
+    // Reload iframe to restart game
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.location.reload();
+    }
   };
 
-  const handleAnswerSelected = (answerIndex: number) => {
-    console.log("Answer selected:", answerIndex);
-    // TODO: Implement answer validation logic here
-    // You can check if it's correct answer and proceed to next question
-  };
-
-  const handlePlayerDeath = useCallback(() => {
-    if (isInvincible) return;
-
-    setIsInvincible(true);
-    setHealth((prev) => {
-      const newHealth = prev - 1;
-      if (newHealth <= 0) {
-        // Game Over - delay to show death animation then go to game over screen
-        setTimeout(() => {
-          setStage("gameover");
-        }, 1000);
+  // Handle keyboard shortcut for pause (Escape key)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && stage === "maze") {
+        if (isPaused) {
+          handleResume();
+        } else {
+          handlePauseClick();
+        }
       }
-      return newHealth;
-    });
+    };
 
-    // Invincibility frames - player is invincible for 2 seconds after being hit
-    setTimeout(() => {
-      setIsInvincible(false);
-    }, 2000);
-  }, [isInvincible]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [stage, isPaused, handleResume, handlePauseClick]);
 
   const handleBackToMenu = () => {
     navigate("/");
@@ -165,14 +145,11 @@ const Game = () => {
         ></div>
       )}
 
-      {/* 3️⃣ Maze Page */}
+      {/* 3️⃣ Game Page with Godot */}
       {stage === "maze" && (
-        <div
-          className="w-screen h-screen bg-cover bg-center relative maze-pop"
-          style={{ backgroundImage: `url(${forrest})` }}
-        >
-          {/* HUD Atas (timer + hearts) */}
-          <div className="absolute top-4 left-4 text-white text-2xl md:text-3xl font-bold drop-shadow-lg z-40">
+        <div className="w-screen h-screen relative maze-pop bg-black">
+          {/* HUD - Countdown Timer */}
+          <div className="absolute top-4 left-4 text-white text-2xl md:text-3xl font-bold drop-shadow-lg z-40 bg-black/50 px-4 py-2 rounded-lg backdrop-blur-sm">
             {formatCountdown(countdown)}
           </div>
 
@@ -186,79 +163,22 @@ const Game = () => {
             </button>
           </div>
 
-          <div className="absolute bottom-4 right-4 flex gap-2 z-40">
-            {Array.from({ length: health }).map((_, i) => (
-              <img
-                key={i}
-                src={heart}
-                className={`w-7 md:w-10 ${isInvincible ? "animate-pulse" : ""}`}
-              />
-            ))}
-          </div>
+          {/* Godot Game iframe */}
+          <iframe
+            ref={iframeRef}
+            src="/godot/FP-Pemweb.html"
+            className="w-full h-full border-0"
+            style={{
+              pointerEvents: isPaused ? "none" : "auto",
+            }}
+            allow="autoplay; fullscreen; cross-origin-isolated"
+            title="Maze Chase Game"
+          />
 
-          {/* GAMEBOARD LAYOUT */}
-          <div className="flex flex-col w-full h-full pt-16 pb-20 px-3 md:px-8">
-            {/* Question Box */}
-            <div className="flex justify-center mb-2">
-              <div className="bg-black/60 text-white px-4 md:px-6 py-2 md:py-3 text-sm md:text-lg rounded-xl max-w-3xl text-center backdrop-blur-md">
-                {gameData?.questions && gameData.questions.length > 0
-                  ? gameData.questions[currentQuestionIndex]?.question_text
-                  : "Loading question..."}
-              </div>
-            </div>
-
-            {/* Maze di tengah */}
-            <div className="flex-1 h-5 flex items-center justify-center">
-              <Maps
-                mapId={1}
-                controlDirection={moveDir}
-                isPaused={isPaused || health <= 0}
-                answers={gameData?.questions?.[currentQuestionIndex]?.answers}
-                onAnswerSelected={handleAnswerSelected}
-                onPlayerDeath={handlePlayerDeath}
-                isInvincible={isInvincible}
-              />
-            </div>
-
-            {/* Arrow Controls (mobile-friendly) */}
-            <div className="md:hidden mt-2 mb-2 flex justify-center">
-              <div className="flex flex-col items-center">
-                {/* Atas */}
-                <button
-                  onClick={() => handleDirectionClick("up")}
-                  className="w-12 h-12 bg-black/50 hover:bg-black/70 rounded-xl text-white text-2xl flex items-center justify-center backdrop-blur-md"
-                >
-                  ▲
-                </button>
-
-                {/* Kiri – Bawah – Kanan */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleDirectionClick("left")}
-                    className="w-12 h-12 bg-black/50 hover:bg-black/70 rounded-xl text-white text-2xl flex items-center justify-center backdrop-blur-md -rotate-90"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => handleDirectionClick("right")}
-                    className="w-12 h-12 bg-black/50 hover:bg-black/70 rounded-xl text-white text-2xl flex items-center justify-center backdrop-blur-md rotate-90"
-                  >
-                    ▲
-                  </button>
-                </div>
-
-                {/* Bawah */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDirectionClick("down")}
-                    className="w-12 h-12 bg-black/50 hover:bg-black/70 rounded-xl text-white text-2xl flex items-center justify-center backdrop-blur-md"
-                  >
-                    ▼
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Overlay when paused */}
+          {isPaused && (
+            <div className="absolute inset-0 bg-black/30 z-30 pointer-events-none" />
+          )}
         </div>
       )}
 
@@ -299,6 +219,7 @@ const Game = () => {
         onClose={() => {
           setShowPauseDialog(false);
           setIsPaused(false);
+          iframeRef.current?.focus();
         }}
         onResume={handleResume}
         onRestart={handleRestart}

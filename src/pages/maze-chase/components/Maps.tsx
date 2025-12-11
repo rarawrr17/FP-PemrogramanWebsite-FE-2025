@@ -778,14 +778,24 @@ export default function Maps({
       window.removeEventListener("keydown", onKey);
       if (reqRef.current) cancelAnimationFrame(reqRef.current);
     };
-  }, [mapId, texture.wall, texture.floor, answers, isPaused]);
+  }, [
+    mapId,
+    texture.wall,
+    texture.floor,
+    answers,
+    isPaused,
+    maze,
+    onAnswerSelected,
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full h-full">
       <canvas
         ref={canvasRef}
         className="border border-gray-500 max-w-full h-auto"
-        style={{ imageRendering: "pixelated" }}
+        style={{
+          imageRendering: "pixelated" as React.CSSProperties["imageRendering"],
+        }}
       />
     </div>
   );
