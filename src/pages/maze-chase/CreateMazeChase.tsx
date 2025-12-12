@@ -496,15 +496,13 @@ function CreateMazeChase() {
                       }}
                       className="w-full flex items-center justify-between px-4 py-4 bg-black/70 border border-gray-700/50 rounded-xl hover:border-[#c9a961]/50 transition-all text-gray-300"
                     >
-                      <span className="text-sm sm:text-base">
-                        {mapId ? (
-                          AVAILABLE_MAPS.find((m) => m.id === mapId)?.name ||
-                          "Select a map"
-                        ) : (
-                          <span className="text-gray-600 text-sm sm:text-base">
-                            Choose your labyrinth...
-                          </span>
-                        )}
+                      <span
+                        className={`text-sm sm:text-base ${mapId ? "text-gray-300" : "text-gray-600"}`}
+                      >
+                        {mapId
+                          ? AVAILABLE_MAPS.find((m) => m.id === mapId)?.name ||
+                            `Selected: ${mapId}`
+                          : "Choose your labyrinth..."}
                       </span>
 
                       <ChevronDown
@@ -521,6 +519,15 @@ function CreateMazeChase() {
                               key={map.id}
                               type="button"
                               onClick={() => {
+                                if (map.id !== "map_001") {
+                                  toast.error(
+                                    "🔒 Coming Soon! This map is currently under development.",
+                                    {
+                                      duration: 3000,
+                                    },
+                                  );
+                                  return;
+                                }
                                 setMapId(map.id);
                                 validateMapId(map.id);
                                 setShowMapDropdown(false);
@@ -528,7 +535,9 @@ function CreateMazeChase() {
                               className={`group overflow-hidden rounded-xl border-2 transition-all duration-300 transform hover:scale-105 active:scale-105 focus:scale-105 ${
                                 mapId === map.id
                                   ? "border-[#c9a961] shadow-lg ring-2 ring-[#c9a961]/30"
-                                  : "border-gray-700/50 hover:border-[#c9a961]/60 hover:shadow-lg"
+                                  : map.id === "map_001"
+                                    ? "border-gray-700/50 hover:border-[#c9a961]/60 hover:shadow-lg"
+                                    : "border-gray-700/50 hover:border-gray-600/60 hover:shadow-lg opacity-60"
                               }`}
                             >
                               <div className="relative overflow-hidden">
@@ -545,6 +554,13 @@ function CreateMazeChase() {
                                         className="text-[#c9a961]"
                                       />
                                     </div>
+                                  </div>
+                                )}
+                                {map.id !== "map_001" && (
+                                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                                    <span className="text-gray-400 text-xs font-semibold bg-black/80 px-3 py-1 rounded-full border border-gray-600">
+                                      🔒 Coming Soon
+                                    </span>
                                   </div>
                                 )}
                               </div>
