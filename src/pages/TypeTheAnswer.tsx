@@ -171,7 +171,8 @@ function TypeTheAnswer() {
     // Check if answer is correct for immediate feedback
     const currentQ = game!.questions[currentQuestion];
     const isCorrect =
-      userAnswer.trim().toLowerCase() === currentQ.correct_answer.toLowerCase();
+      userAnswer.trim().toLowerCase() ===
+      currentQ.correct_answer?.toLowerCase();
 
     // Show feedback animation
     setAnswerFeedback(isCorrect ? "correct" : "wrong");
