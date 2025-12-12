@@ -12,7 +12,11 @@ export default defineConfig({
   },
   server: {
     host: true,
+<<<<<<< HEAD
     port: 5173,
+=======
+    port: 3000,
+>>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
     allowedHosts: ["dev-wordit.it-its.id", "wordit.it-its.id"],
   },
   preview: {
