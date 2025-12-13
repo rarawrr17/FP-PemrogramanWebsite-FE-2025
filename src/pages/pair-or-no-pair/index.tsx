@@ -89,12 +89,14 @@ const useSoundEffects = (isSoundOn: boolean) => {
 
   const getAudioContext = () => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext ||
+      audioContextRef.current = new (
+        window.AudioContext ||
         (
           window as unknown as Window & {
             webkitAudioContext: typeof AudioContext;
           }
-        ).webkitAudioContext)();
+        ).webkitAudioContext
+      )();
     }
     return audioContextRef.current;
   };
@@ -759,7 +761,7 @@ const PairOrNoPairGame = () => {
   }, []);
 
   // 1. FETCH DATA
-  const { gameId } = useParams<{ gameId: string }>();
+  const { id: gameId } = useParams<{ id: string }>();
 
   useEffect(() => {
     const fallbackItems = [
