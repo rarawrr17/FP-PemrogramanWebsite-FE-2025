@@ -9,31 +9,21 @@ import CreateQuiz from "./pages/CreateQuiz";
 import CreateProject from "./pages/CreateProject";
 import EditQuiz from "./pages/EditQuiz";
 import Quiz from "./pages/Quiz";
-<<<<<<< HEAD
 import MatchUpPlay from "./pages/match-up/MatchUpPlay";
 import MatchUpList from "./pages/match-up/MatchUpList";
-=======
->>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
 import ProtectedRoute from "./routes/ProtectedRoutes";
 
 function App() {
   return (
     <>
       <Routes>
-<<<<<<< HEAD
         <Route path="/home" element={<HomePage />} />
-=======
-        <Route path="/" element={<HomePage />} />
->>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sandbox" element={<Sandbox />} />
         <Route path="/quiz/play/:id" element={<Quiz />} />
-<<<<<<< HEAD
         <Route path="/" element={<MatchUpList />} />
         <Route path="/play/match-up/:gameId" element={<MatchUpPlay />} />
-=======
->>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />

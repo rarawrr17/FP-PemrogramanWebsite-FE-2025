@@ -63,7 +63,7 @@ export default function MyProjectsPage() {
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       toast.success("Project deleted successfully!");
     } catch (err) {
-      console.error("Failed to delete project:", err);
+      console.error(err);
       toast.error("Failed to delete project. Please try again.");
     }
   };
@@ -179,19 +179,17 @@ export default function MyProjectsPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-6 md:mt-2">
-                  {project.is_published ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7"
-                      onClick={() => {
-                        navigate(`/quiz/play/${project.id}`);
-                      }}
-                    >
-                      <Play />
-                      Play
-                    </Button>
-                  ) : null}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7"
+                    onClick={() => {
+                      navigate(`/quiz/play/${project.id}`);
+                    }}
+                  >
+                    <Play />
+                    Play
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

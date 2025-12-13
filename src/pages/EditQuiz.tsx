@@ -590,6 +590,41 @@ function EditQuiz() {
               </AlertDialogContent>
             </AlertDialog>
 
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="destructive">
+                  <Trash2 /> Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this project? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={async () => {
+                      try {
+                        await api.delete(`/api/game/game-type/quiz/${id}`);
+                        toast.success("Project deleted successfully!");
+                        navigate("/my-projects");
+                      } catch (err) {
+                        console.error(err);
+                        toast.error("Failed to delete project");
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <Button
               size="sm"
               variant="outline"

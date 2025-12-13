@@ -74,11 +74,7 @@ export default function HomePage() {
     const fetchGameTemplates = async () => {
       try {
         const response = await api.get("/api/game/template");
-<<<<<<< HEAD
         setGameTemplates(response.data?.data || []);
-=======
-        setGameTemplates(response.data.data);
->>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
       } catch (err) {
         console.error("Failed to fetch game templates:", err);
       }
@@ -106,18 +102,11 @@ export default function HomePage() {
         const url = queryString ? `/api/game?${queryString}` : "/api/game";
 
         const response = await api.get(url);
-<<<<<<< HEAD
         const list = response.data?.data || [];
         console.log("Fetched games data:", list);
 
         setGames(
           list.map(
-=======
-        console.log("Fetched games data:", response.data);
-
-        setGames(
-          response.data.data.map(
->>>>>>> 4a519201c77062e5487d87a8d07b44f3e1fcebf9
             (g: Game) =>
               ({
                 ...g,
